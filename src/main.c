@@ -73,9 +73,11 @@ int main()
     // insert into the piece table our file 
     pc_insert(&table, 0, file); 
 
-    table.originalBuffer = (char*)file;
+    table.originalBuffer = malloc(sizeof(char) * strlen(file));
     printf("%s\n", file);
     printf("%s", table.originalBuffer);
+
+    free(table.originalBuffer);
 
     return 0;
 }
