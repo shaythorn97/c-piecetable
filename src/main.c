@@ -1,4 +1,3 @@
-#include <cstdio>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -36,13 +35,26 @@ bool pc_insert(PieceTable* table, uint32_t pos, const char* str)
     // if the originalBuffer is null then we dont need to split the piece
     if (table->originalBuffer == NULL)
     {
-        // set the originalBuffer to the str 
-        // append to the piece table the piece data
+        table->originalBuffer = (char*)str;
+
+        Piece temp = 
+        {
+            .type = ORIGINAL,
+            .startIndex = 0,
+            .length = strlen(str)
+        };
+
+        table->pieces[0] = temp;
+
         return true;
     }
+
     // take in the piece table
+
     // append str to the addedBuffer
+
     // extend the piece table with the new piece
+
     return false;
 }
 
@@ -60,6 +72,10 @@ int main()
 
     // insert into the piece table our file 
     pc_insert(&table, 0, file); 
+
+    table.originalBuffer = (char*)file;
+    printf("%s\n", file);
+    printf("%s", table.originalBuffer);
 
     return 0;
 }
