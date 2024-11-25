@@ -46,8 +46,6 @@ bool pc_insert(PieceTable* table, uint32_t pos, const char* str)
     return false;
 }
 
-
-
 int main()
 {
     const char* file = "Hello World";
