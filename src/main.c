@@ -32,22 +32,9 @@ typedef struct PieceTable
 
 bool pc_insert(PieceTable* table, uint32_t pos, const char* str)
 {
-    // if the originalBuffer is null then we dont need to split the piece
+    // has our piece table been created?
     if (table->originalBuffer == NULL)
-    {
-        table->originalBuffer = (char*)str;
-
-        Piece temp = 
-        {
-            .type = ORIGINAL,
-            .startIndex = 0,
-            .length = strlen(str)
-        };
-
-        table->pieces[0] = temp;
-
-        return true;
-    }
+        return false;
 
     // take in the piece table
 
