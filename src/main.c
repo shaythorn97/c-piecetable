@@ -6,66 +6,168 @@
 #include <stddef.h>
 
 // what is a piece table? 
-//  
-// this is a data structure that keeps the text as a sequence of pieces of text from either the original file and an added text file
+// write some stuff about them here
 
-typedef enum BufferType
+typedef enum
 {
     ORIGINAL,
     ADDED,
-    MAX_TYPES
 } BufferType;
 
-typedef struct Piece
+typedef struct
 {
     BufferType type;
     uint32_t startIndex;
     uint32_t length;
 } Piece;
 
-typedef struct PieceTable
+typedef struct
 {
-    Piece pieces[10];
+    Piece* pieces;
     char* originalBuffer;
     char* addedBuffer;
-    uint16_t count;
+    uint32_t totalLength;
+    uint16_t pieceCount;
 } PieceTable;
 
-bool pc_insert(PieceTable* table, uint32_t pos, const char* str)
+PieceTable pt_init(const char* str)
 {
-    // has our piece table been created?
-    if (table->originalBuffer == NULL)
+    PieceTable pt = 
+    {
+        .pieces = malloc(sizeof(Piece)), 
+        .originalBuffer = malloc(strlen(str) + 1),
+        .addedBuffer = NULL,
+        .totalLength = strlen(str),
+        .pieceCount = 0
+    };
+
+    Piece piece = 
+    {
+        .type = ORIGINAL,
+        .startIndex = 0,
+        .length = strlen(str) 
+    };
+
+    pt.pieces[pt.pieceCount] = piece;
+    pt.pieceCount++;
+
+    strcpy(pt.originalBuffer, str);
+
+    return pt;
+}
+
+// this needs to be refactored with some logging and better error handling
+bool pt_deinit(PieceTable* table)
+{
+    if (!table)
         return false;
 
-    // take in the piece table
+    if (table->pieces)
+        free(table->pieces);
 
-    // append str to the addedBuffer
+    if (table->originalBuffer)
+        free(table->originalBuffer);
 
-    // extend the piece table with the new piece
+    if (table->addedBuffer)
+        free(table->addedBuffer);
 
+    return true;
+}
+
+bool pt_insert(PieceTable* table, uint32_t pos, const char* str)
+{
+    // we need to do some null and safety checks here
+    if (!table || !table->pieces || !table->originalBuffer || pos > table->totalLength || strlen(str) < 1)
+        return false;
+
+    // append the str to the addedBuffer
+    uint32_t originalBufferLen = strlen(table->originalBuffer);
+    uint32_t appendStringLen = strlen(str);
+
+    uint32_t addedBufferLen = 0;
+
+    if (!table->addedBuffer)
+        table->addedBuffer = malloc(appendStringLen + 1);
+    else
+        addedBufferLen = strlen(table->addedBuffer);
+
+    char* tempAddedBuf = realloc(table->addedBuffer, addedBufferLen + appendStringLen + 1);
+
+    if (!tempAddedBuf)
+        return false;
+
+    table->addedBuffer = tempAddedBuf;
+    table->totalLength += addedBufferLen;
+
+    strcpy(table->addedBuffer + addedBufferLen, str);
+    table->addedBuffer[addedBufferLen + appendStringLen] = '\0';
+
+    // here we need to potentially split the piece
+
+
+    // append to the piece table with the correct description
+    Piece* tempPieceBuf = realloc(table->pieces, table->pieceCount * sizeof(Piece));
+
+    if (!tempPieceBuf)
+        return false;
+
+    table->pieces = tempPieceBuf;
+
+    Piece tempPiece = 
+    {
+        .type = ADDED,
+        .startIndex = pos,
+        .length = appendStringLen
+    };
+
+    table->pieces[table->pieceCount] = tempPiece;
+    table->pieceCount++;
+
+    return true;
+}
+
+void pt_index_at(PieceTable* table, uint32_t pos)
+{}
+
+void pt_print(const PieceTable* table)
+{
+
+}
+bool pt_erase(PieceTable* table, uint32_t begin, uint32_t end)
+{
+    return false;
+}
+
+bool pt_copy(PieceTable* table, uint32_t begin, uint32_t end, uint32_t dest)
+{
+    return false;
+}
+
+bool pt_move(PieceTable* table, uint32_t begin, uint32_t end, uint32_t dest)
+{
+    return false;
+}
+
+bool pt_replace(PieceTable* table, uint32_t begin, uint32_t end, const char* str)
+{
     return false;
 }
 
 int main()
 {
-    const char* file = "Hello World";
+    PieceTable pt = pt_init("Hello");
 
-    PieceTable table = 
-    {
-        .pieces = {0},
-        .originalBuffer = NULL,
-        .addedBuffer = NULL,
-        .count = 0,
-    };
+    printf("%s\n", pt.addedBuffer);
 
-    // insert into the piece table our file 
-    pc_insert(&table, 0, file); 
+    pt_insert(&pt, 0, " world");
 
-    table.originalBuffer = malloc(sizeof(char) * strlen(file));
-    printf("%s\n", file);
-    printf("%s", table.originalBuffer);
+    printf("%s\n", pt.addedBuffer);
 
-    free(table.originalBuffer);
+    pt_insert(&pt, 0, "!");
+
+    printf("%s\n", pt.addedBuffer);
+
+    pt_deinit(&pt);
 
     return 0;
 }
